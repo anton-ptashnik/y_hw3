@@ -1,11 +1,15 @@
 package spiraliterator
 
 type cursor struct {
-	col, row int
+	col, row  int
+	direction int
 }
 
-func (c *cursor) move(d int) {
-	switch d {
+func (c *cursor) changeDirection() {
+	c.direction = (c.direction + 1) % (up + 1)
+}
+func (c *cursor) move() {
+	switch c.direction {
 	case right:
 		c.col++
 	case down:
@@ -19,11 +23,10 @@ func (c *cursor) move(d int) {
 
 // spiralIterator traverses over a table in spiral-like manner
 type spiralIterator struct {
-	c             cursor
-	table         [][]int
-	n             int
-	stepsLeft     int
-	moveDirection int
+	c         cursor
+	table     [][]int
+	n         int
+	stepsLeft int
 }
 
 // Read returns an item the iterator points on
@@ -37,21 +40,21 @@ func (s *spiralIterator) Next() bool {
 		return false
 	}
 	if s.stepsLeft == 0 {
-		if s.n == 1 {
+		if s.n == 1 || (s.n == 2 && s.c.direction+1 == up) {
 			s.n = 0
 			return false
 		}
-		s.moveDirection++
+		s.c.changeDirection()
 		s.stepsLeft = s.n - 1
-	} else if s.moveDirection == up && s.stepsLeft == 1 {
-		s.moveDirection = right
+	} else if s.stepsLeft == 1 && s.c.direction == up {
 		s.n -= 2
-		s.stepsLeft = s.n
 		if s.n == 0 {
 			return false
 		}
+		s.c.changeDirection()
+		s.stepsLeft = s.n
 	}
-	s.c.move(s.moveDirection)
+	s.c.move()
 	s.stepsLeft--
 	return true
 }
@@ -70,7 +73,7 @@ func New(t [][]int) *spiralIterator {
 		i.c.col = -1
 		i.n = len(t) + 2
 		i.stepsLeft = 1
-		i.moveDirection = up
+		i.c.direction = up
 	}
 	return &i
 }
