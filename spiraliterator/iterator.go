@@ -1,5 +1,7 @@
 package spiraliterator
 
+import "errors"
+
 type cursor struct {
 	col, row   int
 	dcol, drow int
@@ -47,10 +49,23 @@ func (s *spiralIterator) Next() bool {
 	return true
 }
 
-func Create(t [][]int) spiralIterator {
+func validateTable(t [][]int) bool {
+	rows := len(t)
+	for _, col := range t {
+		if len(col) != rows {
+			return false
+		}
+	}
+	return true
+}
+
+func Create(t [][]int) (spiralIterator, error) {
+	if !validateTable(t) {
+		return spiralIterator{table: [][]int{}}, errors.New("input table is expected to be n*n dimensional")
+	}
 	i := spiralIterator{table: t}
 	i.Reset()
-	return i
+	return i, nil
 }
 
 func (i *spiralIterator) Reset() {
